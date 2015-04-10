@@ -16,6 +16,27 @@ The TimeZone class does not recognise changes of the system time zone until you 
 native code for Windows and Mac OS X to detect these changes during Java runtime.
 
 
+#Maven
+
+    <dependency>
+        <groupId>com.ultramixer</groupId>
+        <artifactId>jtimezone-core</artifactId>
+        <version>1.0.0</version>
+    </dependency>
+
+    <dependency>
+        <groupId>com.ultramixer</groupId>
+        <artifactId>jtimezone-win</artifactId>
+        <version>1.0.0</version>
+    </dependency>
+
+    <dependency>
+        <groupId>com.ultramixer</groupId>
+        <artifactId>jtimezone-mac</artifactId>
+        <version>1.0.0</version>
+    </dependency>
+
+
 #Licence
 
 Free to use private and commercially. Please include a note to our company "UltraMixer Digital Audio Solutions / www.ultramixer.com".
