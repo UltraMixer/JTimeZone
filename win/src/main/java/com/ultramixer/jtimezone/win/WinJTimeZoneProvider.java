@@ -1,54 +1,72 @@
 package com.ultramixer.jtimezone.win;
 
 import com.sun.jna.Native;
-import com.sun.jna.platform.win32.WinDef;
-import com.sun.jna.platform.win32.WinUser;
+import com.sun.jna.NativeLong;
+import com.sun.jna.platform.win32.*;
 import com.ultramixer.jtimezone.JTimeZoneChangeListener;
 import com.ultramixer.jtimezone.JTimeZoneProvider;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import javax.swing.*;
+import java.awt.*;
+import java.util.TimeZone;
 import java.util.logging.Logger;
 
 /**
  * Created by TB on 10.04.15.
  */
-public class WinJTimeZoneProvider implements JTimeZoneProvider
-{
+public class WinJTimeZoneProvider implements JTimeZoneProvider {
     private Logger logger = Logger.getLogger(getClass().getName());
 
-    public WinJTimeZoneProvider()
-    {
-        JFrame frame = new JFrame("Test");
-        frame.setSize(800, 600);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-
-        WinUser.WindowProc proc = new WinUser.WindowProc()
-        {
-            public WinDef.LRESULT callback(WinDef.HWND hwnd, int i, WinDef.WPARAM wparam, WinDef.LPARAM lparam)
-            {
-                return null;
-            }
-        };
+    public WinJTimeZoneProvider() {
         //WM_TIMECHANGE
+
+        System.out.println("Kernel32Util.getComputerName() = " + Kernel32Util.getComputerName());
+
+
+        TIME_ZONE_INFORMATION tzi = new TIME_ZONE_INFORMATION();
+        MyKernel32.MYINSTANCE.GetTimeZoneInformation(tzi);
+
+        String nativeTimeZone = String.valueOf(tzi.StandardName);
+       // System.out.println("tzi = " + tzi);
+
+        NativeLong offsetInMinutes = tzi.Bias;
+        System.out.println("offsetInMinutes = " + offsetInMinutes);
+
+
+        DateTime now = DateTime.now(DateTimeZone.UTC);
+        System.out.println("now = " + now);
+
+        DateTimeZone dtz = DateTimeZone.forOffsetMillis((int) (tzi.Bias.longValue() * 60 * 1000 * -1));
+        //DateTimeZone dtz = DateTimeZone.forOffsetHours(2);
+        System.out.println("dtz = " + dtz.toTimeZone().getID());
+
+        System.out.println("nativeTimeZone = " + nativeTimeZone);
+
+        System.out.println("now.toDateTime(dtz) = " + now.toDateTime(dtz));
+
+
+
+
+        Frame frame = Frame.getFrames()[0];
+       // System.out.println("frame = " + frame);
 
         WinDef.HWND hWnd = new WinDef.HWND();
         hWnd.setPointer(Native.getWindowPointer(frame));
 
 
-        MyListener listener = new MyListener()
-        {
-            public WinDef.LRESULT callback(WinDef.HWND hWnd, int uMsg, WinDef.WPARAM uParam, WinDef.LPARAM lParam)
-            {
-                System.out.println("uMsg = " + uMsg);
-                /*
-                if (uMsg == MyWinUser.WM_DEVICECHANGE)
-                {
+
+        MyListener listener = new MyListener() {
+            public WinDef.LRESULT callback(WinDef.HWND hWnd, int uMsg, WinDef.WPARAM uParam, WinDef.LPARAM lParam) {
+                if (uMsg == MyWinUser.WM_TIMECHANGE) {
+                    System.out.println("Time Changed!");
                     // TODO Check If my device was attached or detached
+
+                    TimeZone.setDefault(null);
+                    System.out.println("  DateTimeZone.getDefault() = " + DateTimeZone.getDefault());
                     return new WinDef.LRESULT(1);
                 }
-                */
                 return new WinDef.LRESULT(0);
             }
         };
@@ -57,18 +75,15 @@ public class WinJTimeZoneProvider implements JTimeZoneProvider
 
     }
 
-    public String getDefaultTimeZoneName()
-    {
+    public String getDefaultTimeZoneName() {
         return null;
     }
 
-    public void addTimeZoneChangeListener(JTimeZoneChangeListener listener)
-    {
+    public void addTimeZoneChangeListener(JTimeZoneChangeListener listener) {
         logger.info("Not yet implemented on Win");
     }
 
-    public boolean removeTimeZoneChangeListener(JTimeZoneChangeListener listener)
-    {
+    public boolean removeTimeZoneChangeListener(JTimeZoneChangeListener listener) {
         logger.info("Not yet implemented on Win");
         return false;
     }
