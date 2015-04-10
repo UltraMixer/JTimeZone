@@ -35,4 +35,9 @@ public class NSTimeZone extends NSObject
     {
         return proxy.sendString("name");
     }
+
+    public int getSecondsFromGMT()
+    {
+        return proxy.sendInt("secondsFromGMT");
+    }
 }

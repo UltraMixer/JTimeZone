@@ -2,6 +2,7 @@ package com.ultramixer.jtimezone.mac;
 
 import com.ultramixer.jtimezone.JTimeZoneChangeListener;
 import com.ultramixer.jtimezone.JTimeZoneProvider;
+import org.joda.time.DateTimeZone;
 
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -48,4 +49,19 @@ public class MacJTimeZoneProvider implements JTimeZoneProvider
     {
         return NSTimeZone.defaultTimeZone().getName();
     }
+
+
+    public DateTimeZone getDefaultTimeZone()
+    {
+        //String timeZoneName = this.getDefaultTimeZoneName();
+        //return DateTimeZone.forID(timeZoneName);
+
+        return DateTimeZone.forOffsetMillis(getDefaultTimeZoneOffsetInMillis().intValue());
+    }
+
+    public Long getDefaultTimeZoneOffsetInMillis()
+    {
+        return NSTimeZone.defaultTimeZone().getSecondsFromGMT() * (long) 1000;
+    }
+
 }

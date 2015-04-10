@@ -78,9 +78,7 @@ public class JTimeZone implements JTimeZoneProvider
             return null;
         }
 
-
-        String timeZoneName = provider.getDefaultTimeZoneName();
-        return DateTimeZone.forID(timeZoneName);
+        return provider.getDefaultTimeZone();
     }
 
     public String getDefaultTimeZoneName()
@@ -91,5 +89,15 @@ public class JTimeZone implements JTimeZoneProvider
         }
 
         return provider.getDefaultTimeZoneName();
+    }
+
+    public Long getDefaultTimeZoneOffsetInMillis()
+    {
+        if (!checkProvider())
+        {
+            return null;
+        }
+
+        return provider.getDefaultTimeZoneOffsetInMillis();
     }
 }

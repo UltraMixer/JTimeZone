@@ -1,90 +1,106 @@
 package com.ultramixer.jtimezone.win;
 
 import com.sun.jna.Native;
-import com.sun.jna.NativeLong;
-import com.sun.jna.platform.win32.*;
+import com.sun.jna.platform.win32.WinDef;
 import com.ultramixer.jtimezone.JTimeZoneChangeListener;
 import com.ultramixer.jtimezone.JTimeZoneProvider;
-import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.TimeZone;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 /**
  * Created by TB on 10.04.15.
  */
-public class WinJTimeZoneProvider implements JTimeZoneProvider {
+public class WinJTimeZoneProvider implements JTimeZoneProvider
+{
     private Logger logger = Logger.getLogger(getClass().getName());
+    private ArrayList<JTimeZoneChangeListener> timeZoneChangeListeners = new ArrayList<JTimeZoneChangeListener>(1);
+    private MyListener listener;
+    private WinDef.HWND hWnd;
 
-    public WinJTimeZoneProvider() {
-        //WM_TIMECHANGE
-
-        System.out.println("Kernel32Util.getComputerName() = " + Kernel32Util.getComputerName());
+    public WinJTimeZoneProvider()
+    {
 
 
+    }
+
+    public String getDefaultTimeZoneName()
+    {
         TIME_ZONE_INFORMATION tzi = new TIME_ZONE_INFORMATION();
         MyKernel32.MYINSTANCE.GetTimeZoneInformation(tzi);
 
-        String nativeTimeZone = String.valueOf(tzi.StandardName);
-       // System.out.println("tzi = " + tzi);
+        return String.valueOf(tzi.StandardName);
+    }
 
-        NativeLong offsetInMinutes = tzi.Bias;
-        System.out.println("offsetInMinutes = " + offsetInMinutes);
+    public Long getDefaultTimeZoneOffsetInMillis()
+    {
+        TIME_ZONE_INFORMATION tzi = new TIME_ZONE_INFORMATION();
+        MyKernel32.MYINSTANCE.GetTimeZoneInformation(tzi);
+
+        return (tzi.Bias.longValue() * 60 * 1000 * -1);
+    }
+
+    public DateTimeZone getDefaultTimeZone()
+    {
+        return DateTimeZone.forOffsetMillis(getDefaultTimeZoneOffsetInMillis().intValue());
+    }
+
+    public void addTimeZoneChangeListener(JTimeZoneChangeListener listener)
+    {
+        timeZoneChangeListeners.add(listener);
+
+        if (timeZoneChangeListeners.size() == 1)
+        {
+            startTimeZoneChangeListening();
+        }
+    }
+
+    private void startTimeZoneChangeListening()
+    {
+        Window window = null;
+        if (Window.getWindows().length > 0)
+        {
+            window = window.getWindows()[0];
+        }
+        else
+        {
+            window = new JWindow();
+            window.setVisible(false);
+        }
 
 
-        DateTime now = DateTime.now(DateTimeZone.UTC);
-        System.out.println("now = " + now);
-
-        DateTimeZone dtz = DateTimeZone.forOffsetMillis((int) (tzi.Bias.longValue() * 60 * 1000 * -1));
-        //DateTimeZone dtz = DateTimeZone.forOffsetHours(2);
-        System.out.println("dtz = " + dtz.toTimeZone().getID());
-
-        System.out.println("nativeTimeZone = " + nativeTimeZone);
-
-        System.out.println("now.toDateTime(dtz) = " + now.toDateTime(dtz));
-
-
-
-
-        Frame frame = Frame.getFrames()[0];
-       // System.out.println("frame = " + frame);
-
-        WinDef.HWND hWnd = new WinDef.HWND();
-        hWnd.setPointer(Native.getWindowPointer(frame));
-
-
-
-        MyListener listener = new MyListener() {
-            public WinDef.LRESULT callback(WinDef.HWND hWnd, int uMsg, WinDef.WPARAM uParam, WinDef.LPARAM lParam) {
-                if (uMsg == MyWinUser.WM_TIMECHANGE) {
-                    System.out.println("Time Changed!");
-                    // TODO Check If my device was attached or detached
-
-                    TimeZone.setDefault(null);
-                    System.out.println("  DateTimeZone.getDefault() = " + DateTimeZone.getDefault());
-                    return new WinDef.LRESULT(1);
+        if (listener == null)
+        {
+            listener = new MyListener()
+            {
+                public WinDef.LRESULT callback(WinDef.HWND hWnd, int uMsg, WinDef.WPARAM uParam, WinDef.LPARAM lParam)
+                {
+                    if (uMsg == MyWinUser.WM_TIMECHANGE)
+                    {
+                        return new WinDef.LRESULT(1);
+                    }
+                    return new WinDef.LRESULT(0);
                 }
-                return new WinDef.LRESULT(0);
-            }
-        };
+            };
+        }
+
+        if (hWnd == null)
+        {
+            hWnd = new WinDef.HWND();
+            hWnd.setPointer(Native.getWindowPointer(window));
+        }
 
         MyUser32.MYINSTANCE.SetWindowLong(hWnd, MyUser32.GWLP_WNDPROC, listener);
 
     }
 
-    public String getDefaultTimeZoneName() {
-        return null;
+    public boolean removeTimeZoneChangeListener(JTimeZoneChangeListener listener)
+    {
+        return timeZoneChangeListeners.remove(listener);
     }
 
-    public void addTimeZoneChangeListener(JTimeZoneChangeListener listener) {
-        logger.info("Not yet implemented on Win");
-    }
 
-    public boolean removeTimeZoneChangeListener(JTimeZoneChangeListener listener) {
-        logger.info("Not yet implemented on Win");
-        return false;
-    }
 }
