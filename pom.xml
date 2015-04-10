@@ -60,12 +60,6 @@
             <version>[2,)</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.ultramixer</groupId>
-            <artifactId>jtimezone-core</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-
     </dependencies>
 
 
