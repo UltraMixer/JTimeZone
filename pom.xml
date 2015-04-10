@@ -9,11 +9,30 @@
     <version>1.0.0</version>
     <packaging>pom</packaging>
 
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+
+    <description>JTimeZone is a java library to get the real current default time zone. Additionally it can be used to
+        detect system time zone changes at runtime.
+    </description>
+    <url>https://github.com/tobium/JTimeZone</url>
+
     <modules>
         <module>core</module>
         <module>mac</module>
         <module>win</module>
     </modules>
+
+    <scm>
+        <url>https://github.com/tobium/JTimeZone.git</url>
+    </scm>
 
     <dependencies>
         <dependency>
@@ -27,5 +46,13 @@
             <version>[2,)</version>
         </dependency>
     </dependencies>
+
+
+    <distributionManagement>
+        <repository>
+            <id>nexus-site</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 
 </project>
